@@ -11,13 +11,14 @@
 #include "dictionary.h"
 
 typedef struct node{
-    char right_word[100];
+    bool is_word;
     struct node* next[28];
 }node;
 
-void init_node(node** ptr){
-    *ptr=malloc(sizeof(node));
+void init_node(node** ptr){ 
+    *ptr=(node*)malloc(sizeof(node));
     int i;
+    (*ptr)->is_word=false;
     for(i=0;i<28;i++){
         (*ptr)->next[i]=NULL;
     }
@@ -29,23 +30,33 @@ int no_of_words=0;
 /**
  * Returns true if word is in dictionary else false.
  */
-bool check(const char *word){
-    trav=root;
-    int key;
+bool check(const char *word_copy){
+    char *word=(char*) malloc(50);
     int i;
-    for(i=0;word[i]!='\0';i++){
-        if(isalpha(word[i])){
-            tolower(word[i]);
-            key=word[i]-96;
+    trav=root;
+    strcpy(word,word_copy);
+    int len=strlen(word_copy);
+    word[len]='\0';
+    int key;
+    for (i=0;i<len;i++){
+        word[i]=toupper(word[i]);
+    }
+    for (i=0;i<len;i++){
+        if (isalpha(word[i])){
+            key=word[i]-64;
         }
-        else{
-            key=27;
+        else key=27;
+        
+        if (trav->next[key]==NULL){
+            return false;
         }
         trav=trav->next[key];
     }
-    if(!strcmp(trav->right_word,word)){
+    if(trav->is_word){
+        free(word);
         return true;
     }
+    free(word);
     return false;
 }
 
@@ -55,37 +66,31 @@ bool check(const char *word){
 bool load(const char *dictionary){
     init_node(&root);
     FILE *infile=fopen(dictionary,"r");
+    if (infile==NULL){
+        return false;
+    }
     char* word=malloc(100);
-    //node* trav;
-    int key;
-    int i;
-    while(true){
+    int i,len,key;
+    while(!(feof(infile))){
         trav=root;
-        fgets(word,100,infile);
-        if(feof(infile)){
-            break;
-        }
-        no_of_words++;
-        for(i=0;word[i]!='\0';i++){
+        fgets(word, 100, infile);
+        len=strlen(word);
+        for(i=0;i<len;i++){
             if(isalpha(word[i])){
-                toupper(word[i]);
-                key=word[i]-96;
+                word[i]=toupper(word[i]);
+                key=word[i]-64;
             }
-            else{
-                key=27;
-            }
-            if(trav->next[key]==NULL){
+            else key=27;
+            if (trav->next[key]==NULL){
                 init_node(&(trav->next[key]));
             }
             trav=trav->next[key];
         }
-        strcpy(trav->right_word,word);
+        trav->is_word=true;
+        no_of_words++;
     }
-    free(word);
-    if(feof(infile)){
-        return true;
-    }
-    return false;
+    fclose(infile);
+    return true;
 }
 
 /**
@@ -100,13 +105,11 @@ unsigned int size(void){
  */
  
 
-void unload_ptr(node* prev, node* trav){
+void free_node(node* trav){
     int i;
     for(i=0;i<28;i++){
         if(trav->next[i]!=NULL){
-            prev=trav;
-            trav=trav->next[i];
-            unload_ptr(prev,trav);
+            free_node(trav->next[i]);
         }
     }
     free(trav);
@@ -114,13 +117,6 @@ void unload_ptr(node* prev, node* trav){
 
 
 bool unload(void){
-    int i;
-    for(i=0;i<28;i++){
-        if(trav->next[i]!=NULL){
-            prev=trav;
-            trav=trav->next[i];
-            unload_ptr(prev,trav);
-        }
-    }
-    return false;
+    free_node(root);
+    return true;
 }
