@@ -25,7 +25,7 @@ void init_node(node** ptr){
 }
 
 node *root, *trav, *prev;
-int no_of_words=0;
+int no_of_words=-1;
 
 /**
  * Returns true if word is in dictionary else false.
@@ -48,6 +48,7 @@ bool check(const char *word_copy){
         else key=26;
         
         if (trav->next[key]==NULL){
+            free (word);
             return false;
         }
         trav=trav->next[key];
@@ -89,6 +90,7 @@ bool load(const char *dictionary){
         no_of_words++;
     }
     fclose(infile);
+    free (word);
     return true;
 }
 
