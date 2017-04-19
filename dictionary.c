@@ -12,14 +12,14 @@
 
 typedef struct node{
     bool is_word;
-    struct node* next[28];
+    struct node* next[27];
 }node;
 
 void init_node(node** ptr){ 
     *ptr=(node*)malloc(sizeof(node));
     int i;
     (*ptr)->is_word=false;
-    for(i=0;i<28;i++){
+    for(i=0;i<27;i++){
         (*ptr)->next[i]=NULL;
     }
 }
@@ -41,23 +41,20 @@ bool check(const char *word_copy){
     for (i=0;i<len;i++){
         word[i]=toupper(word[i]);
     }
-    for (i=0;i<len;i++){
+    for (i=0; i<len; i++, key=0){
         if (isalpha(word[i])){
-            key=word[i]-64;
+            key=(int) word[i]-65;
         }
-        else key=27;
+        else key=26;
         
         if (trav->next[key]==NULL){
             return false;
         }
         trav=trav->next[key];
     }
-    if(trav->is_word){
-        free(word);
-        return true;
-    }
-    free(word);
-    return false;
+    
+    free (word);
+    return trav->is_word;
 }
 
 /**
@@ -78,9 +75,9 @@ bool load(const char *dictionary){
         for(i=0;i<len;i++){
             if(isalpha(word[i])){
                 word[i]=toupper(word[i]);
-                key=word[i]-64;
+                key=word[i]-65;
             }
-            else key=27;
+            else key=26;
             if (trav->next[key]==NULL){
                 init_node(&(trav->next[key]));
             }
