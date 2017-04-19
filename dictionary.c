@@ -71,7 +71,9 @@ bool load(const char *dictionary){
     while(!(feof(infile))){
         trav=root;
         fgets(word, 100, infile);
-        len=strlen(word);
+        len=strlen(word);                           //fgets reads   (bad function) 
+        word[len-1]='\0';                           //what you want to be read as "cat\0"
+        len--;                                      //as "cat\n\0"
         for(i=0;i<len;i++){
             if(isalpha(word[i])){
                 word[i]=toupper(word[i]);
